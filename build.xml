@@ -1,0 +1,123 @@
+<project name="JeRecommender" default="project.dist" basedir=".">
+	
+	<description>Basket Recommendations - Build file</description>
+	
+	<!-- Personal Environment Overrides -->
+	<property file="build.properties"/>
+	
+	<property name="myjava.home" value="${env.JAVA_HOME}"/>
+	<property name="base.home" value="${basedir}"/>
+	<property name="build.home" value="${base.home}/build"/>
+	<property name="dist.home" value="${base.home}/dist"/>
+	<property name="src.home" value="${base.home}/src"/>
+	<property name="lib.home" value="${base.home}/lib"/>
+	<property name="resources.home" value="${base.home}/resources"/>
+	<property name="app.name" value="JeRecommender"/>
+	<property name="build.number" value="0" />
+	<property name="version.number" value="1"/>
+	<property name="compile.debug" value="false"/>
+	<property name="compile.deprecation" value="false"/>
+	<property name="compile.optimize" value="true"/>
+	<property name="username" value="(username not provided)"/>
+	
+	<!-- ==================== Compilation Classpath ===========================
+	Rather than relying on the CLASSPATH environment variable, Ant includes
+	features that makes it easy to dynamically construct the classpath you
+	need for each compilation.
+    -->
+	<path id="compile.classpath">
+		
+		<fileset dir="lib">
+			
+			<include name="*.jar"/>
+			
+			<exclude name="*-sources.jar"/>
+			<exclude name="*-javadoc.jar"/>
+			<exclude name="*-src.jar"/>
+			
+		</fileset>
+		
+	</path>
+	
+	<!-- ==================== Project Dist Target ===================================== -->
+	<target name="project.dist" depends="project.clean,project.compile" description="Create a JAR file (inc. manifest details) of the application ready for distribution">
+		
+		<!-- Prepare -->
+		<mkdir dir="${dist.home}"/>	
+
+		<echo message="Copy required resources to ${dist.home}" />
+		<copy todir="${dist.home}/">
+			<fileset dir="resources" includes="*.*" />
+			<fileset dir="src" includes="*.properties*" />
+		</copy>		
+		
+	    <!-- Set the timestamp format we want -->
+	    <tstamp>
+	    	<format property="TIMESTAMP" pattern="MM/dd/yyyy 'at' hh:mm:ss z" locale="en"/>
+	    </tstamp>	    			
+		
+		<!-- Create the jar file -->
+		<echo message="Building Deployment Files from ${build.home} into ${dist.home}/${app.name}.jar"/>		
+		<jar jarfile="${dist.home}/${app.name}.jar" basedir="${build.home}">
+			<zipgroupfileset dir="${lib.home}" includes="*.jar"/>
+			<manifest>
+	        	<attribute name="Built-By" value="${username}"/>
+				<attribute name="Built-DateTime" value="${TIMESTAMP}"/>
+				<attribute name="Main-Class" value="com.je.recommender.OrderItemRecommenderRunner"/>
+	        	<section name="Jar-Info">        		
+	        		<attribute name="Specification-Title" value="Just-Eat - Vegas - Recommendations"/>	        		
+					<attribute name="Specification-Version" value="${build.number}.${version.number}"/>
+				  	<attribute name="Specification-Vendor" value="Just-Eat Holding Ltd"/>
+				  	<attribute name="Implementation-Title" value="${app.name}"/>		  
+	        		<attribute name="Implementation-Version" value="${build.number}.${version.number}.${DSTAMP}${TSTAMP}"/>        		
+				  	<attribute name="Implementation-Vendor" value="Just-Eat Holding Ltd"/>
+	        	</section>			
+			</manifest>			
+		</jar>
+		
+	</target>
+	
+	<!-- ==================== Project Compile Target ================================== -->
+	<target name="project.compile" depends="project.init" description="Compile the java code for this application only">
+		
+		<!-- Prepare -->
+		<mkdir dir="${build.home}"/>
+		
+		<!-- Compile Java classes as necessary -->		
+		<echo message="Compiling code in ${src.home} to ${build.home}"/>
+		<echo message="Java version require is '1.7' and using Java version '${ant.java.version}'"/>
+		<javac 
+			target="1.7"
+			srcdir="${src.home}"
+			destdir="${build.home}"
+			extdirs="${myjava.home}/jre/lib/ext"
+			debug="${compile.debug}"
+			deprecation="${compile.deprecation}"
+			optimize="${compile.optimize}">			
+			
+			<classpath refid="compile.classpath"/>
+			
+		</javac>
+
+	</target>
+				
+	<!-- ==================== Project Clean Target ================================== -->
+	<target name="project.clean" description="Delete previously created folders/files">
+		
+		<echo message="Delete the build directory" />
+		<delete dir="${build.home}/"/>			
+		<echo message="Delete the dist directory" />		
+		<delete dir="${dist.home}/"/>
+		
+	</target>
+	
+	<!-- ==================== Project Init Target ================================== -->
+	<target name="project.init" description="Creates the required folders/files">
+	    
+		<!-- Create build directories as needed -->
+		<echo message="Create the build directory" />
+	    <mkdir dir="${build.home}"/>
+
+	</target>
+		
+</project>
